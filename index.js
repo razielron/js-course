@@ -1,5 +1,5 @@
-const discRadiusVh = 2.67;
-const discRadiusVw = 1.31;
+const discVh = 5.34;
+const discVw = 2.62;
 let border, borderHeight, borderWidth;
 let isGameStart = false;
 let directions = {};
@@ -23,10 +23,6 @@ function resetDirections() {
     }
 }
 
-function setDirections(disc, isXDirectionChanged) {
-    isXDirectionChanged ? disc.x *= -1 : disc.y *= -1;
-}
-
 function setDiscs() {
     discs = {
         topLeft: document.querySelector('#topLeft'),
@@ -36,6 +32,11 @@ function setDiscs() {
     };
     console.log(discs);
 }
+
+function setDirections(disc, isXDirectionChanged) {
+    isXDirectionChanged ? disc.x *= -1 : disc.y *= -1;
+}
+
 
 function reset() {
     border = document.querySelector('#div');
@@ -51,75 +52,37 @@ function reset() {
     console.log({ borderHeight, borderWidth })
 
     discs.topLeft.style = `top: 0vh; left: 0vw;`;
-    discs.topRight.style = `top: 0vh; right: 0vw;`;
-    discs.bottomLeft.style = `bottom: 0vw; left: 0vh;`;
-    discs.bottomRight.style = `bottom: 0vw; right: 0vh;`;
+    discs.topRight.style = `top: 0vh; left: ${100-discVw}vw;`;
+    discs.bottomLeft.style = `top: ${80-discVh}vh; left: 0vw;`;
+    discs.bottomRight.style = `top: ${80-discVh}vh; left: ${100-discVw}vw;`;
 }
 
-function updateTopLeft() { //1
-    let newX = getNumFromStr(discs.topLeft.style.left) + directions.topLeft.x;
-    let newY = getNumFromStr(discs.topLeft.style.top) + directions.topLeft.y;
-    console.log({ newX, newY })
 
-    if (newX <= 0 || newX >= borderWidth - discRadiusVw) directions.topLeft.x *= -1;
-    if (newY <= 0 || newY >= borderHeight - 2*discRadiusVh) directions.topLeft.y *= -1;
+function updateDiscs(){
 
-    discs.topLeft.style.top = newY + 'vh';
-    discs.topLeft.style.left = newX + 'vw';
-    console.log('1111111111111111111111111')
-    console.log(discs.topLeft.style.top)
-    console.log(discs.topLeft.style.left)
+    for (const [key, value] of Object.entries(discs)) {
+        let newX = getNumFromStr(value.style.left) + directions[key].x;
+        let newY = getNumFromStr(value.style.top) + directions[key].y;
+
+        if (newX <= 0 || newX >= (borderWidth - discVw)){
+            directions[key].x *= -1;
+            newX = getNumFromStr(value.style.left) + directions[key].x;
+        } 
+        if (newY <= 0 || newY >= (borderHeight - discVh)){
+            directions[key].y *= -1;
+            newY = getNumFromStr(value.style.top) + directions[key].y;
+        } 
+
+        value.style.top = newY + 'vh';
+        value.style.left = newX + 'vw';
+        checkCollosion();
+        console.log(value.style.top)
+        console.log(value.style.left)
+    
+    }
+    
 }
 
-function updateTopRight() { //2
-    let newX = getNumFromStr(discs.topRight.style.right) + directions.topRight.x;
-    let newY = getNumFromStr(discs.topRight.style.top) + directions.topRight.y;
-
-    if (newX <= 0 || newX >= borderWidth - discRadiusVw) directions.topRight.x *= -1;
-    if (newY <= 0 || newY >= borderHeight - 2*discRadiusVh) directions.topRight.y *= -1;
-
-    discs.topRight.style.top = newY + 'vh';
-    discs.topRight.style.right = newX + 'vw';
-    console.log('222222222222222222222222')
-    console.log(discs.topLeft.style.top)
-    console.log(discs.topLeft.style.left)
-}
-
-function updateBottomLeft() { //3
-    let newX = getNumFromStr(discs.bottomLeft.style.left) + directions.bottomLeft.x;
-    let newY = getNumFromStr(discs.bottomLeft.style.bottom) + directions.bottomLeft.y;
-
-    if (newX <= 0 || newX >= borderWidth - discRadiusVw) directions.bottomLeft.x *= -1;
-    if (newY <= 0 || newY >= borderHeight - 2*discRadiusVh) directions.bottomLeft.y *= -1;
-
-    discs.bottomLeft.style.bottom = newY + 'vh';
-    discs.bottomLeft.style.left = newX + 'vw';
-    console.log('333333333333333333333')
-    console.log(discs.topLeft.style.top)
-    console.log(discs.topLeft.style.left)
-}
-
-function updateBottomRight() { //4
-    let newX = getNumFromStr(discs.bottomRight.style.right) + directions.bottomRight.x;
-    let newY = getNumFromStr(discs.bottomRight.style.bottom) + directions.bottomRight.y;
-
-    if (newX <= 0 || newX >= borderWidth - discRadiusVw) directions.bottomRight.x *= -1;
-    if (newY <= 0 || newY >= borderHeight - 2*discRadiusVh) directions.bottomRight.y *= -1;
-
-    discs.bottomRight.style.bottom = newY + 'vh';
-    discs.bottomRight.style.right = newX + 'vw';
-    console.log('444444444444444444444')
-    console.log(discs.topLeft.style.top)
-    console.log(discs.topLeft.style.left)
-}
-
-let moveDiscs = () => {
-    updateTopLeft();
-    updateTopRight();
-    updateBottomLeft();
-    updateBottomRight();
-    console.log('asd')
-}
 
 function toggle() {
     isGameStart = !isGameStart;
@@ -129,9 +92,8 @@ function toggle() {
         document.getElementById("reset").removeAttribute("hidden");
         document.getElementById("pause").removeAttribute("hidden");
         reset();
-        setInterval(moveDiscs, 10);
+        setInterval(updateDiscs, 10);
         console.log({ directions })
-
     } else {
 
         document.getElementById("start").removeAttribute("hidden");
@@ -140,3 +102,45 @@ function toggle() {
         document.getElementById("pause").setAttribute("hidden", "hidden");
     }
 }
+
+function twoShits(disc1, disc2){
+    
+    let d1left = getNumFromStr(disc1.style.left);
+    let d2left = getNumFromStr(disc2.style.left);
+    let d1top = getNumFromStr(disc1.style.top);
+    let d2top = getNumFromStr(disc2.style.top);
+    
+    return !(d1left + discVw < d2left || 
+        d1left > d2left + discVw || 
+        d1top + discVh < d2top || 
+        d1top > d2top + discVh);
+}
+
+
+function dicToArrays(){
+    let valueArr = [];
+    let keyArr = [];
+    for (const [key, value] of Object.entries(discs)){ 
+        valueArr.push(value);
+        keyArr.push(key);
+    }
+    return {keyArr, valueArr};
+}   
+
+function deleteDiscs(key1, key2){
+    discs[key1].remove();
+    discs[key2].remove();
+    console.log(discs[key1]);
+    console.log(discs[key2]);
+    delete discs[key1];
+    delete discs[key2];
+}
+
+function checkCollosion(){
+    let {keyArr, valueArr} = dicToArrays();
+    console.log({keyArr, valueArr});
+    for (let i=0; i<valueArr.length; i++)
+        for (let j=i+1; j<valueArr.length; j++)
+            if (twoShits(valueArr[i], valueArr[j]))
+                deleteDiscs(keyArr[i], keyArr[j]);
+} 
