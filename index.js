@@ -5,6 +5,7 @@ let isGameStart = false;
 let directions = {};
 let discs = {};
 let xDirection = 1, yDirection = 1;
+let is_paused = false;
 
 function getRandom() {
     return Number(Math.random().toFixed(2)) + 0.01;
@@ -30,7 +31,7 @@ function setDiscs() {
         bottomLeft: document.querySelector('#bottomLeft'),
         bottomRight: document.querySelector('#bottomRight')
     };
-    console.log(discs);
+
 }
 
 function setDirections(disc, isXDirectionChanged) {
@@ -41,6 +42,9 @@ function setDirections(disc, isXDirectionChanged) {
 function reset() {
     border = document.querySelector('#div');
     document.getElementById("div").removeAttribute("hidden");
+    let para = document.getElementById("para");
+    if (para) para.remove();
+
 
     setDiscs();
     resetDirections();
@@ -49,7 +53,6 @@ function reset() {
     border.style.width = '100vw';
     borderHeight = getNumFromStr(border.style.height);
     borderWidth = getNumFromStr(border.style.width);
-    console.log({ borderHeight, borderWidth })
 
     discs.topLeft.style = `top: 0vh; left: 0vw;`;
     discs.topRight.style = `top: 0vh; left: ${100-discVw}vw;`;
@@ -57,8 +60,15 @@ function reset() {
     discs.bottomRight.style = `top: ${80-discVh}vh; left: ${100-discVw}vw;`;
 }
 
+function paused(){
+    is_paused = !is_paused;
+    document.getElementById("pause").innerText = is_paused ? "RESUME" : "PAUSE";
+}
 
 function updateDiscs(){
+
+    if (is_paused)
+        return;
 
     for (const [key, value] of Object.entries(discs)) {
         let newX = getNumFromStr(value.style.left) + directions[key].x;
@@ -76,8 +86,6 @@ function updateDiscs(){
         value.style.top = newY + 'vh';
         value.style.left = newX + 'vw';
         checkCollosion();
-        console.log(value.style.top)
-        console.log(value.style.left)
     
     }
     
@@ -89,17 +97,16 @@ function toggle() {
 
     if (isGameStart) {
         document.getElementById("start").setAttribute("hidden", "hidden");
-        document.getElementById("reset").removeAttribute("hidden");
-        document.getElementById("pause").removeAttribute("hidden");
+        document.getElementById("reset").style.visibility = "visible";
+        document.getElementById("pause").style.visibility = "visible";
         reset();
         setInterval(updateDiscs, 10);
-        console.log({ directions })
     } else {
 
         document.getElementById("start").removeAttribute("hidden");
         document.getElementById("div").setAttribute("hidden", "hidden");
-        document.getElementById("reset").setAttribute("hidden", "hidden");
-        document.getElementById("pause").setAttribute("hidden", "hidden");
+        document.getElementById("reset").style.visibility = "hidden";
+        document.getElementById("pause").style.visibility = "hidden"; 
     }
 }
 
@@ -127,20 +134,33 @@ function dicToArrays(){
     return {keyArr, valueArr};
 }   
 
-function deleteDiscs(key1, key2){
-    discs[key1].remove();
-    discs[key2].remove();
-    console.log(discs[key1]);
-    console.log(discs[key2]);
+function deleteDisc(key1){
+    discs[key1].style.display='none';
     delete discs[key1];
-    delete discs[key2];
 }
+
+function gameOver(){
+    let dic_to_arr = Object.keys(discs);
+    if (dic_to_arr.length === 1){
+        console.log("Hi Razi")
+        let para = document.createElement("P");
+        para.setAttribute("id", "para");
+        para.innerText = `The last disc is ${dic_to_arr[0]}`;
+        para.classList.add("centered");
+        deleteDisc(dic_to_arr[0]);
+        document.getElementById("div").appendChild(para);
+    }
+}
+
 
 function checkCollosion(){
     let {keyArr, valueArr} = dicToArrays();
-    console.log({keyArr, valueArr});
-    for (let i=0; i<valueArr.length; i++)
-        for (let j=i+1; j<valueArr.length; j++)
-            if (twoShits(valueArr[i], valueArr[j]))
-                deleteDiscs(keyArr[i], keyArr[j]);
+    for (let i=0; i<valueArr.length; i++){
+        for (let j=i+1; j<valueArr.length; j++){
+            if (twoShits(valueArr[i], valueArr[j])){
+                deleteDisc(keyArr[i]);
+                gameOver();
+            }
+        }
+    }
 } 
