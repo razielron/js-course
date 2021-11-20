@@ -1,3 +1,8 @@
+// Name: Raziel Alron 
+// ID: 316061415
+// Name: Omer David
+// ID: 308483437
+
 const discVh = 5.34;
 const discVw = 2.62;
 let border, borderHeight, borderWidth;
@@ -44,8 +49,11 @@ function reset() {
     document.getElementById("div").removeAttribute("hidden");
     let para = document.getElementById("para");
     if (para) para.remove();
+    let timeMassage = document.getElementById("timeMassage");
+    if (timeMassage) timeMassage.remove();
+    
 
-
+    resume();
     setDiscs();
     resetDirections();
 
@@ -61,8 +69,13 @@ function reset() {
 }
 
 function paused(){
-    is_paused = !is_paused;
-    document.getElementById("pause").innerText = is_paused ? "RESUME" : "PAUSE";
+    is_paused = true;
+    document.getElementById("pause").innerText = "RESUME";
+}
+
+function resume(){
+    is_paused = false;
+    document.getElementById("pause").innerText = "PAUSE";
 }
 
 function updateDiscs(){
@@ -91,6 +104,22 @@ function updateDiscs(){
     
 }
 
+function timeCounter(){
+    let time_left = document.getElementById("gameTime").value;
+    let download_timer = setInterval(function(){
+        if(time_left <= 0){
+            clearInterval(download_timer);
+            let para = document.createElement("P");
+            para.setAttribute("id", "timeMassage");
+            para.innerText = "Reached time limit";
+            para.classList.add("centered");
+            document.body.appendChild(para);
+            toggle();
+        }
+        time_left -= 1;
+    }, 1000);
+}
+
 
 function toggle() {
     isGameStart = !isGameStart;
@@ -99,6 +128,8 @@ function toggle() {
         document.getElementById("start").setAttribute("hidden", "hidden");
         document.getElementById("reset").style.visibility = "visible";
         document.getElementById("pause").style.visibility = "visible";
+        document.getElementById("time").style.visibility = "hidden";
+        document.getElementById("gameTime").style.visibility = "hidden";
         reset();
         setInterval(updateDiscs, 10);
     } else {
@@ -107,6 +138,8 @@ function toggle() {
         document.getElementById("div").setAttribute("hidden", "hidden");
         document.getElementById("reset").style.visibility = "hidden";
         document.getElementById("pause").style.visibility = "hidden"; 
+        document.getElementById("time").style.visibility = "visible";
+        document.getElementById("gameTime").style.visibility = "visible";
     }
 }
 
@@ -148,7 +181,8 @@ function gameOver(){
         para.innerText = `The last disc is ${dic_to_arr[0]}`;
         para.classList.add("centered");
         deleteDisc(dic_to_arr[0]);
-        document.getElementById("div").appendChild(para);
+        document.body.appendChild(para);
+        toggle();
     }
 }
 
